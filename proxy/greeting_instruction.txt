@@ -1,0 +1,7 @@
+Hello!
+This app serializes and deserializes data that presents info about student
+Possible commands:
+    help    show this help message
+    get_statistics {{serialization method}} serialize, deserialize according to `serialization method` and provide statistics
+                                            acceptable serialization methods: JSON, MESSAGEPACK
+    show_data_format    show format for data and examples
