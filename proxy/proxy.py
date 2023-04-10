@@ -59,7 +59,7 @@ def accept_new_client(clientsocket: socket.socket, serializers: dict[socket.sock
 
 
 def accept_connections(host: str, port: int, serializers: dict[socket.socket]):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    with socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen(5)
         while True:
@@ -73,7 +73,8 @@ def connect_to_serializers() -> dict[socket.socket]:
         'JSON',
         'MESSAGEPACK',
         'NATIVE',
-        'YAML'
+        'YAML',
+        'XML'
     ]
     serializers = {}
     for format in serializers_formats:

@@ -40,6 +40,16 @@ services:
       METHOD: YAML
       HOST: 0.0.0.0
       PORT: 2004
+  
+  xml-server:
+    build:
+      context: serialization_server/
+      dockerfile: server.Dockerfile
+    command: python3 ./server.py
+    environment:
+      METHOD: XML
+      HOST: 0.0.0.0
+      PORT: 2005
 
   proxy:
     build:
@@ -53,6 +63,7 @@ services:
       MESSAGEPACK: 2002
       NATIVE: 2003
       YAML: 2004
+      XML: 2005
     ports: 
       - 4242:4242
     depends_on:
@@ -60,3 +71,4 @@ services:
       - messagepack-server
       - native-server
       - yaml-server
+      - xml-server

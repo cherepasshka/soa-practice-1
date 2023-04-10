@@ -3,6 +3,7 @@ from serialization_module.msgpack_serializer import MessagePackSerializer
 from serialization_module.json_serializer import JsonSerializer
 from serialization_module.native_serializer import NativeSerializer
 from serialization_module.yaml_serializer import YamlSerializer
+from serialization_module.xml_serializer import XmlSerializer
 
 
 def create_serializer(serialization_method: str) -> BaseSerializer:
@@ -16,4 +17,5 @@ mapping = {
     'MessagePack': MessagePackSerializer,
     'Native': NativeSerializer,
     'YAML': YamlSerializer,
+    'XML': XmlSerializer,
 }
