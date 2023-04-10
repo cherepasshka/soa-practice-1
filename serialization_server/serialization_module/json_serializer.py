@@ -1,9 +1,9 @@
 import json
 import time
-from serialization_module.serializer import Serializer
+from serialization_module.base_serializer import BaseSerializer
 
 
-class JsonSerializer(Serializer):
+class JsonSerializer(BaseSerializer):
     def get_serialization_method(self):
         return 'JSON'
 

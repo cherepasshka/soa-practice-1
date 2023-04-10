@@ -1,9 +1,9 @@
 import msgpack
 import time
-from serialization_module.serializer import Serializer
+from serialization_module.base_serializer import BaseSerializer
 
 
-class MessagePackSerializer(Serializer):
+class MessagePackSerializer(BaseSerializer):
     def get_serialization_method(self):
         return 'MessagePack'
 
