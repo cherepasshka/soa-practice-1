@@ -2,7 +2,7 @@ import socket
 import os
 from serialization_module.serializer import create_serializer
 from serialization_module.base_serializer import BaseSerializer
-from formatted_data import parse_student
+from formatted_data import parse_dict
 
 
 def accept_connections(host: str, port: int, serializer: BaseSerializer):
@@ -18,12 +18,12 @@ def accept_connections(host: str, port: int, serializer: BaseSerializer):
                 lines = batches.split('\n')
                 for batch in lines:
                     if '>>>' == batch[:3]:
-                        student = parse_student(data)
+                        student = parse_dict(data)
                         info = serializer.get_info(student)
                         conn.sendall(info.encode())
                         data = ''
                         break
-                    data += batch
+                    data += batch + '\n'
                 if not batches:
                     break
 

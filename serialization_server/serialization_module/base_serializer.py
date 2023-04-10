@@ -23,6 +23,7 @@ class BaseSerializer(ABC):
         deserealized, deserialization_time = self.deserialize(serialized)
         assert (deserealized == msg)
         return f'Method: {self.get_serialization_method()}\n' + \
-            f'Size: {self.get_message_size(msg)} bytes\n' + \
+            f'Original size: {self.get_message_size(msg)} bytes\n' + \
+            f'Serialized size: {self.get_message_size(serialized)} bytes\n' + \
             f'Serialization time: {serialization_time}\n' + \
             f'Deserialization time:{deserialization_time}\n'

@@ -3,19 +3,31 @@ import _thread
 import os
 
 
-def read_message(clientsocket: socket.socket) -> str:
-    msg = clientsocket.recv(1024)
+def read_message(prev_lines: list[bytes], clientsocket: socket.socket) -> str:
+    msg = b''
+    print(prev_lines)
+    while b'' in prev_lines:
+        prev_lines.remove(b'')
+    for line in prev_lines:
+        if line[:3] == b'end':
+            return msg
+        msg += line + b'\n'
+    while True:
+        cur = clientsocket.recv(1024)
+        if cur[:3] == b'end':
+            break
+        msg += cur
     return msg
 
 
-def handle_command(line: list, serializers: dict[socket.socket], clientsocket: socket.socket) -> str:
+def handle_command(line: list, prev_lines: str, serializers: dict[socket.socket], clientsocket: socket.socket) -> str:
     command = line[0]
     if command == 'help':
         with open('greeting_instruction.txt', 'r') as f:
             instruction = f.read()
         return instruction
     elif command == 'get_statistics':
-        msg = read_message(clientsocket)
+        msg = read_message(prev_lines, clientsocket)
         method = line[1]
         serializers[method].send(msg)
         serializers[method].send(b'>>>')
@@ -36,9 +48,10 @@ def accept_new_client(clientsocket: socket.socket, serializers: dict[socket.sock
             msg = clientsocket.recv(1024)
             if not msg:
                 break
-            line = msg.decode().split()
+            lines = msg.split(b'\n')
+            command = lines[0].decode().split()
             try:
-                result = handle_command(line, serializers, clientsocket)
+                result = handle_command(command, lines[1:], serializers, clientsocket)
                 clientsocket.send(result.encode())
             except NameError as e:
                 clientsocket.send(str(e).encode())
@@ -79,7 +92,6 @@ if __name__ == '__main__':
     else:
         port = 2000
     serializers = connect_to_serializers()
-
     try:
         accept_connections(host, port, serializers)
     except Exception as e:
