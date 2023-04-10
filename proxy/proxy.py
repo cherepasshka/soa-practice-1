@@ -51,7 +51,8 @@ def accept_new_client(clientsocket: socket.socket, serializers: dict[socket.sock
             lines = msg.split(b'\n')
             command = lines[0].decode().split()
             try:
-                result = handle_command(command, lines[1:], serializers, clientsocket)
+                result = handle_command(
+                    command, lines[1:], serializers, clientsocket)
                 clientsocket.send(result.encode())
             except NameError as e:
                 clientsocket.send(str(e).encode())
@@ -71,6 +72,8 @@ def connect_to_serializers() -> dict[socket.socket]:
     serializers_formats = [
         'JSON',
         'MESSAGEPACK',
+        'NATIVE',
+        'YAML'
     ]
     serializers = {}
     for format in serializers_formats:
