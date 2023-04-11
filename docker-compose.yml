@@ -9,9 +9,9 @@ services:
     environment:
       METHOD: JSON
       HOST: 0.0.0.0
-      PORT: 2001
-      MCAST_IP: 224.1.1.1
-      MCAST_PORT: 6000
+      PORT: $JSON_PORT
+      MCAST_IP: $MCAST_IP
+      MCAST_PORT: $MCAST_PORT
   
   messagepack-server:
     build:
@@ -21,9 +21,9 @@ services:
     environment:
       METHOD: MessagePack
       HOST: 0.0.0.0
-      PORT: 2002
-      MCAST_IP: 224.1.1.1
-      MCAST_PORT: 6000
+      PORT: $MESSAGEPACK_PORT
+      MCAST_IP: $MCAST_IP
+      MCAST_PORT: $MCAST_PORT
   
   native-server:
     build:
@@ -33,9 +33,9 @@ services:
     environment:
       METHOD: Native
       HOST: 0.0.0.0
-      PORT: 2003
-      MCAST_IP: 224.1.1.1
-      MCAST_PORT: 6000
+      PORT: $NATIVE_PORT
+      MCAST_IP: $MCAST_IP
+      MCAST_PORT: $MCAST_PORT
   
   yaml-server:
     build:
@@ -45,9 +45,9 @@ services:
     environment:
       METHOD: YAML
       HOST: 0.0.0.0
-      PORT: 2004
-      MCAST_IP: 224.1.1.1
-      MCAST_PORT: 6000
+      PORT: $YAML_PORT
+      MCAST_IP: $MCAST_IP
+      MCAST_PORT: $MCAST_PORT
   
   xml-server:
     build:
@@ -57,9 +57,9 @@ services:
     environment:
       METHOD: XML
       HOST: 0.0.0.0
-      PORT: 2005
-      MCAST_IP: 224.1.1.1
-      MCAST_PORT: 6000
+      PORT: $XML_PORT
+      MCAST_IP: $MCAST_IP
+      MCAST_PORT: $MCAST_PORT
 
   proxy:
     build:
@@ -69,13 +69,13 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: 4242
-      JSON: 2001
-      MESSAGEPACK: 2002
-      NATIVE: 2003
-      YAML: 2004
-      XML: 2005
-      MCAST_IP: 224.1.1.1
-      MCAST_PORT: 6000
+      JSON: $JSON_PORT
+      MESSAGEPACK: $MESSAGEPACK_PORT
+      NATIVE: $NATIVE_PORT
+      YAML: $YAML_PORT
+      XML: $XML_PORT
+      MCAST_IP: $MCAST_IP
+      MCAST_PORT: $MCAST_PORT
     ports: 
       - "4242:4242/udp"
     depends_on:
