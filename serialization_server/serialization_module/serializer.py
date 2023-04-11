@@ -4,6 +4,7 @@ from serialization_module.json_serializer import JsonSerializer
 from serialization_module.native_serializer import NativeSerializer
 from serialization_module.yaml_serializer import YamlSerializer
 from serialization_module.xml_serializer import XmlSerializer
+from serialization_module.avro_serializer import AvroSerializer
 
 
 def create_serializer(serialization_method: str) -> BaseSerializer:
@@ -18,4 +19,5 @@ mapping = {
     'Native': NativeSerializer,
     'YAML': YamlSerializer,
     'XML': XmlSerializer,
+    'AVRO': AvroSerializer,
 }

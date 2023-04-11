@@ -1,0 +1,53 @@
+{
+  "namespace": "example.avro",
+  "type": "record",
+  "name": "test",
+  "fields": [
+    {
+      "name": "int",
+      "type": [
+        "int",
+        "null"
+      ]
+    },
+    {
+      "name": "float",
+      "type": [
+        "float",
+        "null"
+      ]
+    },
+    {
+      "name": "list_str",
+      "type": {
+        "type": "array",
+        "items": "string",
+        "default": []
+      }
+    },
+    {
+      "name": "list_int",
+      "type": {
+        "type": "array",
+        "items": "int"
+      },
+      "default": []
+    },
+    {
+      "name": "list_float",
+      "type": {
+        "type": "array",
+        "items": "float",
+        "default": []
+      }
+    },
+    {
+      "name": "dict",
+      "type": {
+        "type": "map",
+        "values": "string"
+      },
+      "default": {}
+    }
+  ]
+}

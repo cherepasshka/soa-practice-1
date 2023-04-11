@@ -69,6 +69,7 @@ def get_serializers_addresses() -> dict[tuple]:
         'NATIVE',
         'YAML',
         'XML',
+        'AVRO',
     ]
     serializers = {}
     for format in serializers_formats:
@@ -105,4 +106,3 @@ if __name__ == '__main__':
         accept_connections(host, port, serializers)
     except Exception as e:
         print('Error occured:', e)
-        raise e

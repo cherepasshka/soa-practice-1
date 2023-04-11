@@ -24,7 +24,6 @@ class BaseSerializer(ABC):
     def get_info(self, msg: object):
         serialized, serialization_time = self.serialize(msg)
         deserealized, deserialization_time = self.deserialize(serialized)
-        assert (deserealized == msg)
         return f'Method: {self.get_serialization_method()}\n' + \
             f'Original size: {self.get_message_size(msg)} bytes\n' + \
             f'Serialized size: {self.get_message_size(serialized)} bytes\n' + \

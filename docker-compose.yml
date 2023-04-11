@@ -60,6 +60,18 @@ services:
       PORT: $XML_PORT
       MCAST_IP: $MCAST_IP
       MCAST_PORT: $MCAST_PORT
+  
+  avro-server:
+    build:
+      context: serialization_server/
+      dockerfile: server.Dockerfile
+    command: python3 ./server.py
+    environment:
+      METHOD: AVRO
+      HOST: 0.0.0.0
+      PORT: $AVRO_PORT
+      MCAST_IP: $MCAST_IP
+      MCAST_PORT: $MCAST_PORT
 
   proxy:
     build:
@@ -74,6 +86,7 @@ services:
       NATIVE: $NATIVE_PORT
       YAML: $YAML_PORT
       XML: $XML_PORT
+      AVRO: $AVRO_PORT
       MCAST_IP: $MCAST_IP
       MCAST_PORT: $MCAST_PORT
     ports: 
@@ -84,3 +97,4 @@ services:
       - native-server
       - yaml-server
       - xml-server
+      - avro-server

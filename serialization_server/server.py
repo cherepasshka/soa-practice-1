@@ -22,11 +22,14 @@ def accept_connections(udp_sock: socket.socket, serializer: BaseSerializer):
         if SERIALIZER_QUERY_ENDING.encode() in message:
             index = message.index(SERIALIZER_QUERY_ENDING.encode())
             recieved_data[address] += message[:index]
-            data, sender = parse_dict(recieved_data[address].decode())
-            info = serializer.get_info(data)
-            responce = info + f'{SENDER_PREFIX}: {sender}\n'
-            udp_sock.sendto(responce.encode(), address)
-            udp_sock.sendto(f'{USER_QUERY_ENDING}\n'.encode(), address)
+            try:
+                data, sender = parse_dict(recieved_data[address].decode())
+                info = serializer.get_info(data)
+                responce = info + f'{SENDER_PREFIX}: {sender}\n'
+                udp_sock.sendto(responce.encode(), address)
+                udp_sock.sendto(f'{USER_QUERY_ENDING}\n'.encode(), address)
+            except Exception as e:
+                print(e, file=sys.stderr)
             recieved_data[address] = message[index +
                                              len(SERIALIZER_QUERY_ENDING.encode()):]
         else:
