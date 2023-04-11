@@ -10,6 +10,8 @@ services:
       METHOD: JSON
       HOST: 0.0.0.0
       PORT: 2001
+      MCAST_IP: 224.1.1.1
+      MCAST_PORT: 6000
   
   messagepack-server:
     build:
@@ -20,6 +22,8 @@ services:
       METHOD: MessagePack
       HOST: 0.0.0.0
       PORT: 2002
+      MCAST_IP: 224.1.1.1
+      MCAST_PORT: 6000
   
   native-server:
     build:
@@ -30,6 +34,8 @@ services:
       METHOD: Native
       HOST: 0.0.0.0
       PORT: 2003
+      MCAST_IP: 224.1.1.1
+      MCAST_PORT: 6000
   
   yaml-server:
     build:
@@ -40,6 +46,8 @@ services:
       METHOD: YAML
       HOST: 0.0.0.0
       PORT: 2004
+      MCAST_IP: 224.1.1.1
+      MCAST_PORT: 6000
   
   xml-server:
     build:
@@ -50,6 +58,8 @@ services:
       METHOD: XML
       HOST: 0.0.0.0
       PORT: 2005
+      MCAST_IP: 224.1.1.1
+      MCAST_PORT: 6000
 
   proxy:
     build:
@@ -64,6 +74,8 @@ services:
       NATIVE: 2003
       YAML: 2004
       XML: 2005
+      MCAST_IP: 224.1.1.1
+      MCAST_PORT: 6000
     ports: 
       - "4242:4242/udp"
     depends_on:

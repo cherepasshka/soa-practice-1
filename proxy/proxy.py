@@ -1,12 +1,12 @@
 import socket
 import os
+import sys
 
 
-def handle_command(command_line: str, data: str, udp_sock: socket.socket, sender: tuple, serializers: dict[tuple]):
+def handle_command(command_line: str, query: str, udp_sock: socket.socket, sender: tuple, serializers: dict[tuple]):
     command, method = command_line.split()
     if command == 'get_statistics':
-        request = data + f'SENDER: {str(sender)}\n'
-        print('send', request, 'to', serializers[method])
+        request = query + f'SENDER: {str(sender)}\n'
         udp_sock.sendto(request.encode(), serializers[method])
         udp_sock.sendto(b'>>>\n', serializers[method])
 
@@ -44,9 +44,10 @@ def accept_connections(host: str, port: int, serializers: dict[tuple]):
             else:
                 recv_data = recieved_data[address]
                 enter_index = recv_data.index(b'\n')
-                command_line = recv_data[:enter_index]
-                handle_command(command_line.decode(
-                ), recv_data[enter_index + 1:].decode(), udp_sock, address, serializers)
+                command_line = recv_data[:enter_index].decode()
+                query = recv_data[enter_index + 1:].decode()
+                handle_command(command_line, query, udp_sock,
+                               address, serializers)
 
             recieved_data[address] = message[index + len(ending):]
         else:
@@ -59,7 +60,7 @@ def get_serializers_addresses() -> dict[tuple]:
         'MESSAGEPACK',
         'NATIVE',
         'YAML',
-        'XML'
+        'XML',
     ]
     serializers = {}
     for format in serializers_formats:
@@ -67,7 +68,17 @@ def get_serializers_addresses() -> dict[tuple]:
             port = int(os.environ[format])
             serializer_server = format.lower() + '-server'
             serializers[format] = (serializer_server, port)
-    serializers['all'] = ('-', 0)
+    if 'MCAST_IP' in os.environ.keys():
+        mcast_group = os.environ['MCAST_IP']
+    else:
+        mcast_group = '127.0.0.1'  # invalid ip range for multicast
+        print(
+            'Warning: $MCAST_IP was not set, so multicast will be disabled', file=sys.stderr)
+    if 'MCAST_PORT' in os.environ.keys():
+        mcast_port = int(os.environ['MCAST_PORT'])
+    else:
+        mcast_port = 65432
+    serializers['all'] = (mcast_group, mcast_port)
     return serializers
 
 
@@ -81,6 +92,7 @@ if __name__ == '__main__':
     else:
         port = 2000
     serializers = get_serializers_addresses()
+    print(serializers)
     try:
         accept_connections(host, port, serializers)
     except Exception as e:
