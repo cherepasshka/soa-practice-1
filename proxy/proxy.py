@@ -70,6 +70,7 @@ def get_serializers_addresses() -> dict[tuple]:
         'YAML',
         'XML',
         'AVRO',
+        'PROTO'
     ]
     serializers = {}
     for format in serializers_formats:

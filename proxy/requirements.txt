@@ -2,3 +2,4 @@ msgpack==1.0.5
 PyYAML==5.4.1
 xml_marshaller==1.0.2
 avro==1.11.1
+protobuf==3.19

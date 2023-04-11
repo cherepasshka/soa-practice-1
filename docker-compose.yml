@@ -1,11 +1,11 @@
 version: "3"
 
 services:
-  json-server:
+  json-worker:
     build:
-      context: serialization_server/
-      dockerfile: server.Dockerfile
-    command: python3 ./server.py
+      context: serialization_worker/
+      dockerfile: worker.Dockerfile
+    command: python3 ./worker.py
     environment:
       METHOD: JSON
       HOST: 0.0.0.0
@@ -13,11 +13,11 @@ services:
       MCAST_IP: $MCAST_IP
       MCAST_PORT: $MCAST_PORT
   
-  messagepack-server:
+  messagepack-worker:
     build:
-      context: serialization_server/
-      dockerfile: server.Dockerfile
-    command: python3 ./server.py
+      context: serialization_worker/
+      dockerfile: worker.Dockerfile
+    command: python3 ./worker.py
     environment:
       METHOD: MessagePack
       HOST: 0.0.0.0
@@ -25,11 +25,11 @@ services:
       MCAST_IP: $MCAST_IP
       MCAST_PORT: $MCAST_PORT
   
-  native-server:
+  native-worker:
     build:
-      context: serialization_server/
-      dockerfile: server.Dockerfile
-    command: python3 ./server.py
+      context: serialization_worker/
+      dockerfile: worker.Dockerfile
+    command: python3 ./worker.py
     environment:
       METHOD: Native
       HOST: 0.0.0.0
@@ -37,11 +37,11 @@ services:
       MCAST_IP: $MCAST_IP
       MCAST_PORT: $MCAST_PORT
   
-  yaml-server:
+  yaml-worker:
     build:
-      context: serialization_server/
-      dockerfile: server.Dockerfile
-    command: python3 ./server.py
+      context: serialization_worker/
+      dockerfile: worker.Dockerfile
+    command: python3 ./worker.py
     environment:
       METHOD: YAML
       HOST: 0.0.0.0
@@ -49,11 +49,11 @@ services:
       MCAST_IP: $MCAST_IP
       MCAST_PORT: $MCAST_PORT
   
-  xml-server:
+  xml-worker:
     build:
-      context: serialization_server/
-      dockerfile: server.Dockerfile
-    command: python3 ./server.py
+      context: serialization_worker/
+      dockerfile: worker.Dockerfile
+    command: python3 ./worker.py
     environment:
       METHOD: XML
       HOST: 0.0.0.0
@@ -61,15 +61,27 @@ services:
       MCAST_IP: $MCAST_IP
       MCAST_PORT: $MCAST_PORT
   
-  avro-server:
+  avro-worker:
     build:
-      context: serialization_server/
-      dockerfile: server.Dockerfile
-    command: python3 ./server.py
+      context: serialization_worker/
+      dockerfile: worker.Dockerfile
+    command: python3 ./worker.py
     environment:
       METHOD: AVRO
       HOST: 0.0.0.0
       PORT: $AVRO_PORT
+      MCAST_IP: $MCAST_IP
+      MCAST_PORT: $MCAST_PORT
+  
+  proto-worker:
+    build:
+      context: serialization_worker/
+      dockerfile: worker.Dockerfile
+    command: python3 ./worker.py
+    environment:
+      METHOD: PROTO
+      HOST: 0.0.0.0
+      PORT: $PROTO_PORT
       MCAST_IP: $MCAST_IP
       MCAST_PORT: $MCAST_PORT
 
@@ -87,14 +99,16 @@ services:
       YAML: $YAML_PORT
       XML: $XML_PORT
       AVRO: $AVRO_PORT
+      PROTO: $PROTO_PORT
       MCAST_IP: $MCAST_IP
       MCAST_PORT: $MCAST_PORT
     ports: 
       - "4242:4242/udp"
     depends_on:
-      - json-server
-      - messagepack-server
-      - native-server
-      - yaml-server
-      - xml-server
-      - avro-server
+      - json-worker
+      - messagepack-worker
+      - native-worker
+      - yaml-worker
+      - xml-worker
+      - avro-worker
+      - proto-worker
