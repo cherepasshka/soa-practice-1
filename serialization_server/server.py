@@ -6,26 +6,31 @@ from formatted_data import parse_dict
 
 
 def accept_connections(host: str, port: int, serializer: BaseSerializer):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind((host, port))
-        s.listen()
-        conn, addr = s.accept()
-        with conn:
-            print(f"Connected by {addr}")
-            data = ''
-            while True:
-                batches = conn.recv(1024).decode()
-                lines = batches.split('\n')
-                for batch in lines:
-                    if '>>>' == batch[:3]:
-                        student = parse_dict(data)
-                        info = serializer.get_info(student)
-                        conn.sendall(info.encode())
-                        data = ''
-                        break
-                    data += batch + '\n'
-                if not batches:
-                    break
+    recieved_data = dict()
+    udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_sock.bind((host, port))
+    while True:
+        try:
+            message, address = udp_sock.recvfrom(1024)
+        except KeyboardInterrupt:
+            udp_sock.close()
+            return
+        if address not in recieved_data.keys():
+            recieved_data[address] = b''
+        ending = b'>>>'
+        if ending in message:
+            index = message.index(ending)
+            recieved_data[address] += message[:index]
+            data, sender = parse_dict(recieved_data[address].decode())
+            info = serializer.get_info(data)
+            responce = info + f'SENDER: {sender}\n'
+            udp_sock.sendto(responce.encode(), address)
+            udp_sock.sendto(b'end\n', address)
+            recieved_data[address] = message[index + len(ending):]
+        else:
+            if not message.endswith(b'\n'):
+                message += b'\n'
+            recieved_data[address] += message
 
 
 if __name__ == '__main__':

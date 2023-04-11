@@ -1,74 +1,59 @@
 import socket
-import _thread
 import os
 
 
-def read_message(prev_lines: list[bytes], clientsocket: socket.socket) -> str:
-    msg = b''
-    print(prev_lines)
-    while b'' in prev_lines:
-        prev_lines.remove(b'')
-    for line in prev_lines:
-        if line[:3] == b'end':
-            return msg
-        msg += line + b'\n'
+def handle_command(command_line: str, data: str, udp_sock: socket.socket, sender: tuple, serializers: dict[tuple]):
+    command, method = command_line.split()
+    if command == 'get_statistics':
+        request = data + f'SENDER: {str(sender)}\n'
+        print('send', request, 'to', serializers[method])
+        udp_sock.sendto(request.encode(), serializers[method])
+        udp_sock.sendto(b'>>>\n', serializers[method])
+
+
+def get_address(token):
+    if '\n' in token:
+        token = token[:token.index('\n')]
+    address, port = token[1:-1].split(',')
+    if '"' in address:
+        address = address.replace('"', '')
+    if "'" in address:
+        address = address.replace("'", '')
+    return (address, int(port))
+
+
+def accept_connections(host: str, port: int, serializers: dict[tuple]):
+    udp_sock = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+    udp_sock.bind((host, port))
+    recieved_data = dict()
     while True:
-        cur = clientsocket.recv(1024)
-        if cur[:3] == b'end':
-            break
-        msg += cur
-    return msg
+        message, address = udp_sock.recvfrom(1024)
+        if address not in recieved_data.keys():
+            recieved_data[address] = b''
+        ending = b'end\n'
+        if ending in message:
+            index = message.index(ending)
+            recieved_data[address] += message[:index]
+            if b'SENDER' in recieved_data[address]:
+                token = b'SENDER: '
+                indx = recieved_data[address].index(token)
+                sender_token = recieved_data[address][indx + len(token):]
+                info = recieved_data[address][:indx]
+                sender = get_address(sender_token.decode())
+                udp_sock.sendto(info, sender)
+            else:
+                recv_data = recieved_data[address]
+                enter_index = recv_data.index(b'\n')
+                command_line = recv_data[:enter_index]
+                handle_command(command_line.decode(
+                ), recv_data[enter_index + 1:].decode(), udp_sock, address, serializers)
+
+            recieved_data[address] = message[index + len(ending):]
+        else:
+            recieved_data[address] += message
 
 
-def handle_command(line: list, prev_lines: str, serializers: dict[socket.socket], clientsocket: socket.socket) -> str:
-    command = line[0]
-    if command == 'help':
-        with open('greeting_instruction.txt', 'r') as f:
-            instruction = f.read()
-        return instruction
-    elif command == 'get_statistics':
-        msg = read_message(prev_lines, clientsocket)
-        method = line[1]
-        serializers[method].send(msg)
-        serializers[method].send(b'>>>')
-        return serializers[method].recv(1024).decode()
-    elif command == 'show_data_format':
-        pass
-    else:
-        raise NameError('Unknown command', command)
-
-
-def accept_new_client(clientsocket: socket.socket, serializers: dict[socket.socket]):
-    instruction = ''
-    with open('greeting_instruction.txt', 'rb') as f:
-        instruction = f.read()
-    with clientsocket:
-        clientsocket.send(instruction)
-        while True:
-            msg = clientsocket.recv(1024)
-            if not msg:
-                break
-            lines = msg.split(b'\n')
-            command = lines[0].decode().split()
-            try:
-                result = handle_command(
-                    command, lines[1:], serializers, clientsocket)
-                clientsocket.send(result.encode())
-            except NameError as e:
-                clientsocket.send(str(e).encode())
-
-
-def accept_connections(host: str, port: int, serializers: dict[socket.socket]):
-    with socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM) as s:
-        s.bind((host, port))
-        s.listen(5)
-        while True:
-            connection, addr = s.accept()
-            _thread.start_new_thread(
-                accept_new_client, (connection, serializers))
-
-
-def connect_to_serializers() -> dict[socket.socket]:
+def get_serializers_addresses() -> dict[tuple]:
     serializers_formats = [
         'JSON',
         'MESSAGEPACK',
@@ -80,9 +65,9 @@ def connect_to_serializers() -> dict[socket.socket]:
     for format in serializers_formats:
         if format in os.environ.keys():
             port = int(os.environ[format])
-            serializers[format] = socket.socket()
             serializer_server = format.lower() + '-server'
-            serializers[format].connect((serializer_server, port))
+            serializers[format] = (serializer_server, port)
+    serializers['all'] = ('-', 0)
     return serializers
 
 
@@ -95,11 +80,8 @@ if __name__ == '__main__':
         port = int(os.environ['PORT'])
     else:
         port = 2000
-    serializers = connect_to_serializers()
+    serializers = get_serializers_addresses()
     try:
         accept_connections(host, port, serializers)
     except Exception as e:
         print('Error occured:', e)
-    finally:
-        for format in serializers.keys():
-            serializers[format].close()

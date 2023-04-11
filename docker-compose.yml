@@ -65,7 +65,7 @@ services:
       YAML: 2004
       XML: 2005
     ports: 
-      - 4242:4242
+      - "4242:4242/udp"
     depends_on:
       - json-server
       - messagepack-server

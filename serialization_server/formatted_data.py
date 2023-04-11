@@ -24,10 +24,14 @@ def parse_dict(msg: str) -> dict[str]:
     while '' in lines:
         lines.remove('')
     params = {}
+    sender = ()
     for line in lines:
         index = line.index(':')
         param, value = line[:index], line[index + 1:]
         param = param.strip()
         value = value.strip()
-        params[param] = parse_param(value, param)
-    return params
+        if param == 'SENDER':
+            sender = value
+        else:
+            params[param] = parse_param(value, param)
+    return params, sender
