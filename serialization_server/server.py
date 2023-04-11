@@ -6,6 +6,7 @@ import sys
 from serialization_module.serializer import create_serializer
 from serialization_module.base_serializer import BaseSerializer
 from formatted_data import parse_dict
+from defaults import *
 
 
 def accept_connections(udp_sock: socket.socket, serializer: BaseSerializer):
@@ -18,16 +19,16 @@ def accept_connections(udp_sock: socket.socket, serializer: BaseSerializer):
             return
         if address not in recieved_data.keys():
             recieved_data[address] = b''
-        ending = b'>>>'
-        if ending in message:
-            index = message.index(ending)
+        if SERIALIZER_QUERY_ENDING.encode() in message:
+            index = message.index(SERIALIZER_QUERY_ENDING.encode())
             recieved_data[address] += message[:index]
             data, sender = parse_dict(recieved_data[address].decode())
             info = serializer.get_info(data)
-            responce = info + f'SENDER: {sender}\n'
+            responce = info + f'{SENDER_PREFIX}: {sender}\n'
             udp_sock.sendto(responce.encode(), address)
-            udp_sock.sendto(b'end\n', address)
-            recieved_data[address] = message[index + len(ending):]
+            udp_sock.sendto(f'{USER_QUERY_ENDING}\n'.encode(), address)
+            recieved_data[address] = message[index +
+                                             len(SERIALIZER_QUERY_ENDING.encode()):]
         else:
             if not message.endswith(b'\n'):
                 message += b'\n'
@@ -61,7 +62,7 @@ if __name__ == '__main__':
     if 'HOST' in os.environ.keys():
         host = os.environ['HOST']
     else:
-        host = '127.0.0.1'
+        host = LOCALHOST
     if 'PORT' in os.environ.keys():
         port = int(os.environ['PORT'])
     else:
@@ -70,7 +71,7 @@ if __name__ == '__main__':
     if 'MCAST_IP' in os.environ.keys():
         mcast_group = os.environ['MCAST_IP']
     else:
-        mcast_group = '127.0.0.1'  # invalid ip range for multicast
+        mcast_group = LOCALHOST  # invalid ip range for multicast
         print(
             'Warning: $MCAST_IP was not set, so multicast will be disabled', file=sys.stderr)
     if 'MCAST_PORT' in os.environ.keys():
@@ -79,12 +80,9 @@ if __name__ == '__main__':
         mcast_port = 65432
     serializer = create_serializer(method)
     try:
-        print(mcast_group, mcast_port)
-        assert (mcast_group == '224.1.1.1')
         mcast_udp_socket = create_mcast_udp_socket(mcast_group, mcast_port)
         threading.Thread(target=accept_connections, args=(
             mcast_udp_socket, serializer), daemon=True).start()
         accept_connections(create_udp_socket(host, port), serializer)
     except Exception as e:
         print('Error occured:', e)
-        raise e

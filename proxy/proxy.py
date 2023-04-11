@@ -1,14 +1,21 @@
 import socket
 import os
 import sys
+from defaults import *
 
 
 def handle_command(command_line: str, query: str, udp_sock: socket.socket, sender: tuple, serializers: dict[tuple]):
     command, method = command_line.split()
     if command == 'get_statistics':
-        request = query + f'SENDER: {str(sender)}\n'
+        if method not in serializers.keys():
+            udp_sock.sendto(f'Undefined serializer: {method}'.encode(), sender)
+            return
+        request = query + f'{SENDER_PREFIX}: {str(sender)}\n'
         udp_sock.sendto(request.encode(), serializers[method])
-        udp_sock.sendto(b'>>>\n', serializers[method])
+        udp_sock.sendto(
+            f'{SERIALIZER_QUERY_ENDING}\n'.encode(), serializers[method])
+    else:
+        udp_sock.sendto(f'Undefined command: {command}'.encode(), sender)
 
 
 def get_address(token):
@@ -30,14 +37,15 @@ def accept_connections(host: str, port: int, serializers: dict[tuple]):
         message, address = udp_sock.recvfrom(1024)
         if address not in recieved_data.keys():
             recieved_data[address] = b''
-        ending = b'end\n'
+        ending = f'{USER_QUERY_ENDING}\n'.encode()
         if ending in message:
             index = message.index(ending)
             recieved_data[address] += message[:index]
-            if b'SENDER' in recieved_data[address]:
-                token = b'SENDER: '
+            if SENDER_PREFIX.encode() in recieved_data[address]:
+                token = f'{SENDER_PREFIX}: '.encode()
                 indx = recieved_data[address].index(token)
-                sender_token = recieved_data[address][indx + len(token):]
+                sender_token = recieved_data[address][indx +
+                                                      len(token):]
                 info = recieved_data[address][:indx]
                 sender = get_address(sender_token.decode())
                 udp_sock.sendto(info, sender)
@@ -71,7 +79,7 @@ def get_serializers_addresses() -> dict[tuple]:
     if 'MCAST_IP' in os.environ.keys():
         mcast_group = os.environ['MCAST_IP']
     else:
-        mcast_group = '127.0.0.1'  # invalid ip range for multicast
+        mcast_group = LOCALHOST  # invalid ip range for multicast
         print(
             'Warning: $MCAST_IP was not set, so multicast will be disabled', file=sys.stderr)
     if 'MCAST_PORT' in os.environ.keys():
@@ -86,7 +94,7 @@ if __name__ == '__main__':
     if 'HOST' in os.environ.keys():
         host = os.environ['HOST']
     else:
-        host = '127.0.0.1'
+        host = LOCALHOST
     if 'PORT' in os.environ.keys():
         port = int(os.environ['PORT'])
     else:
@@ -97,3 +105,4 @@ if __name__ == '__main__':
         accept_connections(host, port, serializers)
     except Exception as e:
         print('Error occured:', e)
+        raise e
